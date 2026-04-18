@@ -1,0 +1,61 @@
+{
+  "entities": {
+    "Receipt": {
+      "title": "Receipt",
+      "description": "Proof of Impact (PoI) sealed locally and mirrored to URP",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "principalId": { "type": "string", "description": "UID of the actor who emitted this receipt" },
+        "kind": { "type": "string" },
+        "intent": { "type": "string" },
+        "evidenceHash": { "type": "string" },
+        "previousReceiptHash": { "type": "string" },
+        "timestamp": { "type": "number", "description": "Unix ns" },
+        "ihsanScore": { "type": "number" },
+        "verdict": { "type": "boolean" },
+        "subReceipts": {
+          "type": "array",
+          "items": { "$ref": "#/entities/SubReceipt" }
+        }
+      },
+      "required": ["id", "principalId", "kind", "intent", "evidenceHash", "previousReceiptHash", "timestamp", "ihsanScore", "verdict"]
+    },
+    "SubReceipt": {
+      "title": "SubReceipt",
+      "description": "Atomic action trace",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "inputHash": { "type": "string" },
+        "outputHash": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "action", "inputHash", "outputHash", "timestamp"]
+    },
+    "Principal": {
+      "title": "Principal",
+      "description": "Sovereign User / Architect Profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "seedCirculation": { "type": "number" },
+        "rahdStaked": { "type": "number" },
+        "activationTime": { "type": "number" }
+      },
+      "required": ["uid", "seedCirculation", "rahdStaked", "activationTime"]
+    }
+  },
+  "firestore": {
+    "receipts/{receiptId}": {
+      "schema": "#/entities/Receipt",
+      "description": "The canonical URP receipt chain (Public witnessable, read-only to non-authors, verifiable)"
+    },
+    "principals/{uid}": {
+      "schema": "#/entities/Principal",
+      "description": "Principal Identity records in the URP"
+    }
+  }
+}

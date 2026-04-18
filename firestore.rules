@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Phase 3 Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    // Receipt Validation
+    function isValidReceipt(data) {
+      return data.keys().hasAll(['id', 'principalId', 'kind', 'intent', 'evidenceHash', 'previousReceiptHash', 'timestamp', 'ihsanScore', 'verdict']) &&
+             data.size() >= 9 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.principalId is string && data.principalId == request.auth.uid &&
+             data.kind is string && data.kind.size() <= 100 &&
+             data.intent is string && data.intent.size() <= 2000 &&
+             data.evidenceHash is string && data.evidenceHash.size() == 64 &&
+             data.previousReceiptHash is string && data.previousReceiptHash.size() <= 64 &&
+             data.timestamp is number &&
+             data.ihsanScore is number && data.ihsanScore >= 0.0 && data.ihsanScore <= 1.0 &&
+             data.verdict is bool &&
+             (!('subReceipts' in data.keys()) || (data.subReceipts is list && data.subReceipts.size() <= 100)); // Bounded list
+    }
+
+    // Principal Validation
+    function isValidPrincipal(data) {
+      return data.keys().hasAll(['uid', 'seedCirculation', 'rahdStaked', 'activationTime']) &&
+             data.size() >= 4 &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.seedCirculation is number &&
+             data.rahdStaked is number &&
+             data.activationTime is number &&
+             (!('displayName' in data.keys()) || (data.displayName is string && data.displayName.size() <= 100));
+    }
+
+    // 0. Catch-All Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 1. Receipts Path
+    match /receipts/{receiptId} {
+      // Anyone can verify/read a receipt structure
+      allow read: if isSignedIn();
+      allow list: if isSignedIn();
+      
+      // Receipts are immutable Proof-of-Impact. They can only be created by the authenticated owner.
+      allow create: if isSignedIn() &&
+                       isValidId(receiptId) &&
+                       isValidReceipt(incoming()) &&
+                       incoming().id == receiptId;
+
+      // Receipts CANNOT be updated or deleted, enforcing chain integrity.
+      allow update, delete: if false;
+    }
+
+    // 2. Principals Path
+    match /principals/{uid} {
+      // Anyone can verify a principal exists
+      allow read: if isSignedIn();
+      allow list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+                       isValidId(uid) &&
+                       uid == request.auth.uid &&
+                       isValidPrincipal(incoming());
+
+      allow update: if isSignedIn() &&
+                       uid == request.auth.uid &&
+                       isValidPrincipal(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['seedCirculation', 'rahdStaked', 'displayName']);
+      
+      allow delete: if false;
+    }
+  }
+}
