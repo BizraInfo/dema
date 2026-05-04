@@ -1,0 +1,12 @@
+{
+  "name": "@bizra/dema-cli",
+  "version": "0.1.0-alpha.0",
+  "type": "module",
+  "bin": {
+    "dema": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test ../../tests/status.test.js"
+  }
+}
