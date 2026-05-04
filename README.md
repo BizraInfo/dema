@@ -2,66 +2,99 @@
 
 **Your sovereign AI node companion.**
 
-Dema helps you run a private AI workspace on your own machine — with memory, safe actions, receipts, and a clear next step.
+Dema helps you run a private AI workspace on your own machine -- with memory, safe actions, receipts, and a clear next step.
 
-No coding required.  
-No hidden autonomy.  
-No action without your consent.  
-Local-first by default.  
-Receipt-backed by design.
+Local-first.
+Consent-bound.
+Receipt-backed.
+No coding required.
 
 ```text
 Install Dema
-→ create your local profile
-→ connect a local model
-→ see your node health
-→ approve one bounded action
-→ receive your first proof receipt
+-> create your profile
+-> connect a local model
+-> see your node health
+-> approve one bounded action
+-> receive your first proof receipt
 ```
 
-Dema is the first public product of BIZRA.
-
-**BIZRA is the ecosystem. Dema is the door.**
+BIZRA is the ecosystem.
+Dema is the door.
 
 ---
 
-## Why Dema exists
+## The 60-second version
 
-Most AI tools ask you to trust invisible systems.
+Dema is for people who want local AI without invisible autonomy.
 
-Dema is different:
+It shows:
 
-- **Local-first:** your node runs on your machine first.
-- **Consent-bound:** Dema does not act silently.
-- **Receipt-backed:** important actions produce proof receipts.
-- **Memory-aware:** Dema remembers only within your consent boundary.
-- **Human-centered:** Dema shows what is safe, what is blocked, and what comes next.
+- what is ready on your machine
+- what is blocked
+- what Dema can safely preview
+- what requires your exact consent
+- what receipt will prove the result
+
+Dema does not ask you to trust a black box. It tells you what it knows, what it will not touch, and what the next safe action is.
+
+---
+
+## First run
+
+```bash
+dema welcome
+dema setup
+dema status
+dema doctor
+dema mission propose
+```
+
+Expected first impression:
+
+```text
+Welcome to Dema.
+
+Your node is local-first.
+Your actions are consent-bound.
+Your important steps can produce receipts.
+
+Next:
+1. Run setup
+2. Check status
+3. Preview first bounded diagnostic
+```
+
+`dema mission propose` is a preview command. It checks readiness and consent state, then stops. It does not start a daemon, execute work, or create the first runtime receipt.
 
 ---
 
 ## Install
 
-### Non-technical users
+### Guided installer
 
-Download the installer from the release page, open it, and follow the wizard.
+Download Dema, open it, and follow the first-run wizard.
 
-Dema will guide you through:
+The wizard guides you through:
 
-1. creating your local profile
-2. choosing privacy settings
-3. detecting LM Studio or Ollama
-4. checking your node health
-5. creating your first receipt folder
+1. Welcome
+2. Privacy mode
+3. Profile
+4. Model detection
+5. Local health check
+6. Receipt folder
+7. First safe action preview
 
 ### Terminal install
 
-Linux / macOS:
+The terminal installer endpoint is planned for the packaged alpha release. Until release assets are published, use the developer install below.
+
+Planned Linux / macOS command:
 
 ```bash
 curl -fsSL https://install.dema.ai | sh
 ```
 
-Windows PowerShell:
+Planned Windows PowerShell command:
 
 ```powershell
 irm https://install.dema.ai | iex
@@ -74,99 +107,79 @@ git clone https://github.com/BizraInfo/Dema
 cd Dema
 npm install
 npm test
-npm run dev
+npm run check
 ```
 
 ---
 
-## First experience
+## What setup creates
 
-```bash
-dema setup
-dema status
-dema today
-dema doctor
-dema mission propose
-dema receipts
-dema monetize
-```
-
-Dema should answer in plain language:
+`dema setup` creates local state in your Dema home directory, usually `~/.dema`:
 
 ```text
-Your node is ready.
-Your model is connected.
-Your memory profile exists.
-The activation gate is still explicit consent.
-Next safe action: run one bounded diagnostic mission.
+~/.dema/
+  profile.json
+  config.local.json
+  receipts/
+  memory/
+  logs/
+  skills/
 ```
+
+Setup is idempotent and non-destructive. If a profile or config already exists, Dema leaves it in place.
+
+Setup does not start a background process.
+Setup does not execute a mission.
+Setup does not issue ARTIFACT-011.
 
 ---
 
-## What Dema v0.1 does
+## Receipts
 
-- local profile setup
-- daily tick / continuity check
-- Node0 readiness status
-- local model detection
-- receipt list / receipt viewer
-- mission proposal preview
-- FATE consent boundary
-- safe monetization guardian stub
+A receipt is Dema's way of saying:
 
-## What Dema v0.1 does not claim
+```text
+what happened,
+what did not happen,
+what evidence exists,
+and what the next safe action is.
+```
 
-Dema v0.1 does **not** claim AGI.  
-Dema v0.1 does **not** launch a token.  
-Dema v0.1 does **not** activate a public network.  
-Dema v0.1 does **not** run background autonomy without consent.
+Use:
+
+```bash
+dema receipts
+dema receipts ARTIFACT-011
+```
+
+Learn more in [`docs/RECEIPTS.md`](docs/RECEIPTS.md).
 
 ---
 
 ## Product promise
-
-Dema does not say:
-
-> Trust me.
 
 Dema says:
 
 > Here is what I know.  
 > Here is what is safe.  
 > Here is what is blocked.  
-> Here is what I can do with your consent.  
+> Here is what I can preview with your consent.
 > Here is the receipt.
 
 ---
 
-## Status
-
-This repository is the public product shell for Dema.
-
-The current BIZRA Node0 state before first runtime pulse is:
-
-```text
-NODE0 SINGULARITY PULSE — ARMED, ORIGIN-SEALED
-```
+## Current boundary
 
 The next runtime artifact is:
 
 ```text
-ARTIFACT-011 — First Bounded Diagnostic Receipt
+ARTIFACT-011 -- First Bounded Diagnostic Receipt
 ```
 
-Until ARTIFACT-011 exists, Dema’s public messaging remains local-first, consent-gated, and proof-safe.
-
----
-
-## ARTIFACT-011 boundary
-
-`dema mission propose` is a preview command only. It checks readiness and exact consent language, then stops.
-
-It does **not** start a daemon, fire the runtime pulse, dispatch Node1, route to external providers, or create a token/economic claim.
-
-The required consent phrase for the governed one-shot runtime path is:
+ARTIFACT-011 remains locked behind the governed one-shot runtime path and the exact consent phrase:
 
 ```text
 GO: Node0 bounded diagnostic activation only
 ```
+
+Until that receipt exists, Dema's public language remains local-first, consent-bound, and proof-safe.

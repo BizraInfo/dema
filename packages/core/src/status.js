@@ -2,7 +2,7 @@ export function defaultStatus() {
   return {
     schema: "bizra.dema.status.v0.1",
     node: "Node0",
-    human: "Mumu",
+    human: null,
     ready: false,
     consoleReady: false,
     activationGate: "BLOCKED",
