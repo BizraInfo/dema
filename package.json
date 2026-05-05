@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "node apps/cli/src/index.js status",
     "check": "node scripts/check.mjs",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "priority-anchor": "node scripts/priority-anchor.mjs themassage.pdf bizra.pdf BIZRA_Third_Fact_v0_1_FINAL.pdf",
+    "priority-anchor:verify": "node scripts/priority-anchor.mjs --verify proof-of-priority/manifest.json"
   },
   "engines": {
     "node": ">=20"
