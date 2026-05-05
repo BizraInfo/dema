@@ -1,0 +1,50 @@
+{
+  "algorithm_id": "bizra.priority-anchor.v1",
+  "domain": {
+    "leaf": "BIZRA-PRIORITY-LEAF-v1",
+    "node": "BIZRA-PRIORITY-NODE-v1"
+  },
+  "tree_order": "filename_ascending_lexicographic",
+  "duplicate_odd_leaf": true,
+  "created_at": "2026-05-05T11:29:45.328Z",
+  "input_files": [
+    "BIZRA_Third_Fact_v0_1_FINAL.pdf",
+    "bizra.pdf",
+    "themassage.pdf"
+  ],
+  "files": [
+    {
+      "filename": "BIZRA_Third_Fact_v0_1_FINAL.pdf",
+      "file_size_bytes": 82972,
+      "file_sha256": "1deacd63f42315d7ae5ac426eb33149fae5d37e99c67b3949421b2c5c80cd02d",
+      "leaf_hash": "567ec39fa66f3bb589b99fe94ac2209849464568bd7600f46e002f2aeff69798"
+    },
+    {
+      "filename": "bizra.pdf",
+      "file_size_bytes": 691327,
+      "file_sha256": "f95bc6f76acdc9339e005411a17810c50624784f18b55811d8339fcef6601538",
+      "leaf_hash": "bb0a7702277aa1c2e8c3ce4cc40c68fc4bb49bd774c2a2a2910e6bea1b158f01"
+    },
+    {
+      "filename": "themassage.pdf",
+      "file_size_bytes": 186502,
+      "file_sha256": "e05b73b933df31964b96255dca673300b01caea3bce8bd283e7f6440a876d3ce",
+      "leaf_hash": "d62044c8ecd4c29905379c09b979de372510f3cfb636e3a229054c4e8727667b"
+    }
+  ],
+  "root_hash": "45aa2789b6085558a387cd3d6bbae894defdfa71fdd5a1db18135e6039e1477a",
+  "layers": [
+    [
+      "567ec39fa66f3bb589b99fe94ac2209849464568bd7600f46e002f2aeff69798",
+      "bb0a7702277aa1c2e8c3ce4cc40c68fc4bb49bd774c2a2a2910e6bea1b158f01",
+      "d62044c8ecd4c29905379c09b979de372510f3cfb636e3a229054c4e8727667b"
+    ],
+    [
+      "89dbb37e52d4981e2b1b71d63a7b8ad20b3f3421450fac1caf9b2342b229d14b",
+      "12af5571f700a25dc15c88ab87a2b98b857be36bfbbbafdae56a8a336bfebdd8"
+    ],
+    [
+      "45aa2789b6085558a387cd3d6bbae894defdfa71fdd5a1db18135e6039e1477a"
+    ]
+  ]
+}
