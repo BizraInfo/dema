@@ -75,11 +75,11 @@ After PR 0.2.3, `/data/bizra/repos/DEMA` is archivable. Recommended action: `tar
 - B's web app and Next.js stack — out of scope for v0.2. Dema today is a CLI; web is a v0.3 conversation.
 - B's "six modes" framing — preserve as **product vocabulary** in `docs/PRODUCT.md`, but do not pre-build empty mode skeletons. Mode N exists when mode N has a working command.
 - B's `mcp/` and `prompts/` packages — empty in B, do not seed them empty in A.
-- B's claim that Dema "consumes truth from `bizra-omega`" — A currently consumes from Node0 via adapter shellout, not from a `bizra-omega` SDK. Reconcile this naming in ADR-003 import: Node0 is the substrate today.
+- B's claim that Dema "consumes truth from `bizra-omega`" — validated 2026-05-05: `bizra-omega` is the Rust workspace inside `bizra-data-lake` (27+ crates including `bizra-cognition-gateway`, the read-only HTTP projection meant for the Dema Console). The gateway boundary is real, not aspirational. Today's Dema CLI consumes Node0 status via the adapter shellout in [packages/node-adapter/src/node0-adapter.js](../packages/node-adapter/src/node0-adapter.js); v0.2.1+ migration moves that toward the `bizra-cognition-gateway` HTTP surface. ADR-003 stays `Accepted`.
 
 ## What stays uncertain (do not pretend otherwise)
 
-- Whether `bizra-omega` exists as a real repo target — not on this host under `/data/bizra/repos/`. ADR-003 from B references it; if it is aspirational, the ADR import must be marked `Status: Proposed` not `Accepted`.
+- ~~Whether `bizra-omega` exists as a real repo target~~ — **resolved 2026-05-05**: `bizra-omega` is the Rust workspace inside `bizra-data-lake` (Cargo workspace with 27+ member crates including `bizra-cognition-gateway`). ADR-003 stays `Accepted`.
 - Whether the public GitHub repo (`BizraInfo/Dema`) should become a Turborepo monorepo or stay a single-package repo for v0.2. The Turbo migration is reversible; do it on a branch first.
 - Whether ARTIFACT-011 doctrine survives B's "no shadow state" doctrine intact. They are compatible (ARTIFACT-011 is preview-only and explicit), but the language will need a one-paragraph reconciliation.
 
@@ -92,7 +92,7 @@ mkdir -p docs/00-product-thesis docs/02-architecture docs/06-adr
 cp /data/bizra/repos/DEMA/docs/00-product-thesis/*.md docs/00-product-thesis/
 cp /data/bizra/repos/DEMA/docs/02-architecture/*.md docs/02-architecture/
 cp /data/bizra/repos/DEMA/docs/06-adr/*.md docs/06-adr/
-# Edit ADR-003 to mark Status: Proposed pending bizra-omega confirmation
+# ADR-003 stays Accepted — bizra-omega validated as Rust workspace inside bizra-data-lake (2026-05-05)
 npm test && npm run check
 ```
 

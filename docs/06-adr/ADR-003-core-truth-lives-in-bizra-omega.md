@@ -1,16 +1,18 @@
 # ADR-003: Core Truth Lives in bizra-omega
 
-**Status:** Proposed (2026-05-05)
+**Status:** Accepted
 **Original date:** 2026-04-17
 **Decision makers:** Mumu (Mohamed Beshr)
 
-## Reconciliation note (2026-05-05)
+## Substrate clarification (2026-05-05)
 
-Imported from the R1 scaffold (`/data/bizra/repos/DEMA`) as part of the v0.2 doctrine absorption. Status downgraded from `Accepted` to `Proposed` because the named substrate `bizra-omega` does not exist as a repo on this host — current Dema consumes Node0 status through the adapter shellout in [packages/node-adapter/src/node0-adapter.js](../../packages/node-adapter/src/node0-adapter.js), not through a `bizra-omega` SDK. Re-accept this ADR once either (a) `bizra-omega` is created and the SDK exists, or (b) the ADR is rewritten to name the actual substrate (`bizra-data-lake` + Node0 adapter).
+`bizra-omega` is the **Rust workspace inside `bizra-data-lake`** (`github.com/BizraInfo/bizra-data-lake`), not a separate top-level repo. Validated 2026-05-05 by reading `bizra-data-lake/bizra-omega/Cargo.toml`: 27+ member crates organised as Platform Layer (bizra-core, bizra-hypergraph, bizra-inference, bizra-autopoiesis, bizra-federation, bizra-installer, bizra-python, bizra-api, bizra-tests, bizra-hunter, bizra-telescript, bizra-proofspace, bizra-resourcepool, bizra-cli) + Node0 Cognitive Layer (bizra-hooks, bizra-memory) + Action Bus (bizra-action) + TTRL Layer (bizra-ttrl) + Desktop Node Layer (bizra-agent, bizra-node) + Advanced Bindings (fate-binding, iceoryx-bridge) + Exact Arithmetic (bizra-sippar) + Mission Control Plane (bizra-mission) + Protocol Layer (bizra-protocol) + Cognition Substrate (bizra-cognition) + **Cognition Gateway (bizra-cognition-gateway — the read-only HTTP projection that this ADR describes the Dema Console consuming)**.
+
+So the gateway boundary in this ADR is real, not aspirational. Today's Dema CLI consumes Node0 status via the adapter shellout in [packages/node-adapter/src/node0-adapter.js](../../packages/node-adapter/src/node0-adapter.js); the v0.2.1+ migration moves that toward the `bizra-cognition-gateway` HTTP surface.
 
 ## Context
 
-The BIZRA system has a clear separation: a constitutional substrate holds missions, receipts, chain, trust engine, admissibility logic. DEMA is the product face.
+The BIZRA system has a clear separation: the `bizra-omega` Rust workspace holds the constitutional runtime — missions, receipts, chain, trust engine, admissibility logic. Dema is the product face. The two communicate only through the cognition gateway.
 
 If DEMA duplicates any core truth (e.g., reimplements receipt validation, invents its own trust scoring, or maintains a parallel mission registry), the system loses its constitutional guarantee.
 
