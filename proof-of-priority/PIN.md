@@ -12,7 +12,11 @@ This file pins the canonical BIZRA proof-of-priority state on disk and on `main`
 | `algorithm_commit` | `685e51b` (PR #7) |
 | `merge_commit` | `7b35964` (main) |
 | `pinned_at` | `2026-05-05` |
-| `stamp_status` | `PENDING` — OpenTimestamps stamp not yet performed |
+| `stamp_status` | `STAMPED` — OpenTimestamps submission accepted; awaiting calendar→Bitcoin upgrade (~24h) |
+| `stamped_at` | `2026-05-05T16:07Z` |
+| `stamped_file_sha256` | `637f067e1200909c08294b20e1d4be9063862a2fd53dcf47bb07ad1d93c98702` (sha256 of `merkle-root.txt` bytes — the value OTS actually attests to; binds to `root_hash` via the file's content) |
+| `ots_artifact` | [`proof-of-priority/merkle-root.txt.ots`](./merkle-root.txt.ots) |
+| `pending_calendars` | `https://alice.btc.calendar.opentimestamps.org`<br/>`https://btc.calendar.catallaxy.com`<br/>`https://finney.calendar.eternitywall.com` |
 
 ## Frozen filenames
 
@@ -45,8 +49,8 @@ This pin advances through the following states. Each transition requires an expl
 
 | State | Meaning | Update on transition |
 |---|---|---|
-| `PENDING` | Algorithm + manifest + root committed on `main`; no OpenTimestamps action yet. **(current)** | — |
-| `STAMPED` | `ots stamp proof-of-priority/merkle-root.txt` run; `merkle-root.txt.ots` committed | set `stamp_status: STAMPED`; add `stamped_at` |
+| `PENDING` | Algorithm + manifest + root committed on `main`; no OpenTimestamps action yet. | — |
+| `STAMPED` | `ots stamp proof-of-priority/merkle-root.txt` run; `merkle-root.txt.ots` committed. **(current)** | set `stamp_status: STAMPED`; add `stamped_at`, `stamped_file_sha256`, `pending_calendars` |
 | `UPGRADED` | `ots upgrade` run after the calendar window (~24h); upgraded `.ots` committed | set `stamp_status: UPGRADED`; add `upgraded_at` and (when known) `bitcoin_block_height` |
 
 The stamp action is irreversible (it writes to public timestamp calendars) and identity-binding. It is out of scope for any auto-mode session and requires explicit human authorization.
