@@ -183,3 +183,15 @@ GO: Node0 bounded diagnostic activation only
 ```
 
 Until that receipt exists, Dema's public language remains local-first, consent-bound, and proof-safe.
+
+---
+
+## Proof of priority
+
+Dema's three founding documents are anchored on Bitcoin via OpenTimestamps. The algorithm and root are **reproducible from this repo** with Node ≥20:
+
+```bash
+npm run priority-anchor:verify
+```
+
+Canonical state lives in [`proof-of-priority/PIN.md`](proof-of-priority/PIN.md). Spec in [`docs/PRIORITY_ANCHOR.md`](docs/PRIORITY_ANCHOR.md).

@@ -17,6 +17,7 @@ This file pins the canonical BIZRA proof-of-priority state on disk and on `main`
 | `stamped_file_sha256` | `637f067e1200909c08294b20e1d4be9063862a2fd53dcf47bb07ad1d93c98702` (sha256 of `merkle-root.txt` bytes — the value OTS actually attests to; binds to `root_hash` via the file's content) |
 | `ots_artifact` | [`proof-of-priority/merkle-root.txt.ots`](./merkle-root.txt.ots) |
 | `pending_calendars` | `https://alice.btc.calendar.opentimestamps.org`<br/>`https://btc.calendar.catallaxy.com`<br/>`https://finney.calendar.eternitywall.com` |
+| `per_file_attestations` | [`per-file/`](./per-file/) — independent per-document `.ots` receipts (defensive insurance; each PDF stands alone) |
 
 ## Frozen filenames
 
