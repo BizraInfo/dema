@@ -7,3 +7,4 @@ dist/
 .dema/
 coverage/
 .claude/
+.vscode/
