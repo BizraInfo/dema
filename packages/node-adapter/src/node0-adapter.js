@@ -57,7 +57,7 @@ export function normalizeNode0Status(raw) {
   return {
     schema: "bizra.dema.status.v0.1",
     node: "Node0",
-    human: raw?.profile?.preferred_name ?? raw?.human ?? "Mumu",
+    human: raw?.profile?.preferred_name ?? raw?.human ?? null,
     ready: Boolean(raw?.ready),
     consoleReady: Boolean(raw?.console_ready ?? raw?.dema_console?.console_ready),
     activationGate: raw?.activation_gate ?? raw?.dema_console?.activation_gate ?? "BLOCKED",
@@ -93,7 +93,13 @@ export function createNode0Adapter(options = {}) {
       const [bin, ...args] = parseCommandLine(command);
       if (!bin) throw new Error("DEMA_NODE0_STATUS_COMMAND is empty");
       const { stdout } = await execFileAsync(bin, args, { timeout: 30000 });
-      return normalizeNode0Status(JSON.parse(stdout));
+      try {
+        return normalizeNode0Status(JSON.parse(stdout));
+      } catch (error) {
+        throw new Error(
+          `DEMA_NODE0_STATUS_COMMAND returned non-JSON output: ${error.message}`
+        );
+      }
     },
 
     async listReceipts() {

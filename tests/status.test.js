@@ -1,8 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { mkdtemp, mkdir, writeFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { promisify } from "node:util";
 import { defaultStatus, formatStatus } from "../packages/core/src/status.js";
 import {
   BOUNDED_DIAGNOSTIC_CONSENT_PHRASE,
@@ -13,15 +15,20 @@ import { readTodayTick, recordTodayTick } from "../packages/core/src/today.js";
 import { evaluateConsent } from "../packages/fate/src/fate.js";
 import { runSetup } from "../packages/installer/src/setup.js";
 import {
+  createNode0Adapter,
   normalizeNode0Status,
   parseCommandLine
 } from "../packages/node-adapter/src/node0-adapter.js";
 import { listReceipts, readReceipt } from "../packages/receipts/src/receipt-store.js";
 
+const execFileAsync = promisify(execFile);
+const cliPath = new URL("../apps/cli/src/index.js", import.meta.url).pathname;
+
 test("default status is safe and blocked", () => {
   const status = defaultStatus();
   assert.equal(status.ready, false);
   assert.equal(status.activationGate, "BLOCKED");
+  assert.equal(status.human, null);
 });
 
 test("status formatting includes consent boundary", () => {
@@ -100,6 +107,11 @@ test("setup creates local profile and config without daemon activation", async (
   const result = await runSetup(root);
   assert.equal(result.root, root);
   assert.equal(result.created, true);
+  assert.ok(result.createdPaths.includes(join(root, "profile.json")));
+  assert.ok(result.untouched.includes("mission runtime"));
+  assert.equal(result.boundaries.noHiddenDaemon, true);
+  assert.equal(result.boundaries.missionExecuted, false);
+  assert.equal(result.boundaries.artifact011Issued, false);
 
   const profile = JSON.parse(await readFile(join(root, "profile.json"), "utf8"));
   assert.equal(profile.hidden_autonomy, false);
@@ -107,6 +119,41 @@ test("setup creates local profile and config without daemon activation", async (
   const config = JSON.parse(await readFile(join(root, "config.local.json"), "utf8"));
   assert.equal(config.noHiddenDaemon, true);
   assert.equal(config.requireExplicitConsent, true);
+
+  const second = await runSetup(root);
+  assert.equal(second.created, false);
+  assert.ok(second.existingPaths.includes(join(root, "profile.json")));
+});
+
+test("welcome CLI gives non-technical first-run orientation", async () => {
+  const { stdout } = await execFileAsync("node", [cliPath, "welcome"]);
+  assert.match(stdout, /Welcome to Dema/);
+  assert.match(stdout, /local-first/);
+  assert.match(stdout, /consent-bound/);
+  assert.match(stdout, /Run setup/);
+});
+
+test("setup CLI reports untouched runtime boundaries", async () => {
+  const root = await mkdtemp(join(tmpdir(), "dema-cli-setup-"));
+  const { stdout } = await execFileAsync("node", [cliPath, "setup"], {
+    env: { ...process.env, DEMA_HOME: root }
+  });
+  const output = JSON.parse(stdout);
+  assert.equal(output.paths.home, root);
+  assert.equal(output.boundaries.noHiddenDaemon, true);
+  assert.equal(output.boundaries.missionExecuted, false);
+  assert.equal(output.boundaries.artifact011Issued, false);
+  assert.ok(output.untouched.includes("runtime pulse"));
+});
+
+test("mission propose CLI remains preview-only", async () => {
+  const root = await mkdtemp(join(tmpdir(), "dema-cli-mission-"));
+  const { stdout } = await execFileAsync("node", [cliPath, "mission", "propose"], {
+    env: { ...process.env, DEMA_HOME: root }
+  });
+  const output = JSON.parse(stdout);
+  assert.equal(output.executes, false);
+  assert.equal(output.action, "bounded_diagnostic_activation");
 });
 
 test("today tick records continuity without mission execution", async () => {
@@ -154,6 +201,21 @@ test("node0 status normalization preserves measured onboarding seal fields", () 
   assert.equal(status.model.connected, true);
   assert.deepEqual(status.model.loadedModelIds, ["qwen/qwen3.5-9b"]);
   assert.equal(status.rustBus.ready, true);
+});
+
+test("node0 status normalization does not default to a private human name", () => {
+  const status = normalizeNode0Status({});
+  assert.equal(status.human, null);
+});
+
+test("node0 adapter explains malformed command output", async () => {
+  const adapter = createNode0Adapter({
+    command: 'node -e "process.stdout.write(`not-json`)"'
+  });
+  await assert.rejects(
+    () => adapter.status(),
+    /DEMA_NODE0_STATUS_COMMAND returned non-JSON output/
+  );
 });
 
 test("node0 command parser preserves quoted paths with spaces", () => {

@@ -17,6 +17,18 @@ function argValue(name) {
 
 async function main() {
   switch (command) {
+    case "welcome":
+      console.log(`Welcome to Dema.
+
+Your node is local-first.
+Your actions are consent-bound.
+Your important steps can produce receipts.
+
+Next:
+1. Run setup
+2. Check status
+3. Preview first bounded diagnostic`);
+      break;
     case "setup":
       console.log(JSON.stringify(await runSetup(), null, 2));
       break;
@@ -78,6 +90,7 @@ async function main() {
       console.log(`Dema CLI
 
 Usage:
+  dema welcome      Show the first-run orientation
   dema setup        Create local Dema folders/profile skeleton
   dema status       Show human-readable Node0 status
   dema status:json  Show machine-readable status

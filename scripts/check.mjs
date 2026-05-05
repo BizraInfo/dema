@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 
 const commands = [
   ["node", ["--test"]],
+  ["node", ["apps/cli/src/index.js", "welcome"]],
   ["node", ["apps/cli/src/index.js", "help"]],
   ["node", ["apps/cli/src/index.js", "status"]],
   ["node", ["apps/cli/src/index.js", "mission", "propose"]],

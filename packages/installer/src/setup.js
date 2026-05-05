@@ -11,43 +11,84 @@ async function exists(path) {
   }
 }
 
+async function ensureDir(path) {
+  const alreadyExists = await exists(path);
+  await mkdir(path, { recursive: true });
+  return { path, status: alreadyExists ? "existing" : "created" };
+}
+
+async function writeJsonIfMissing(path, value) {
+  if (await exists(path)) return { path, status: "existing" };
+  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  return { path, status: "created" };
+}
+
 export async function runSetup(root = process.env.DEMA_HOME || join(homedir(), ".dema")) {
-  await mkdir(root, { recursive: true });
-  await mkdir(join(root, "receipts"), { recursive: true });
-  await mkdir(join(root, "memory"), { recursive: true });
-  await mkdir(join(root, "logs"), { recursive: true });
-  await mkdir(join(root, "skills"), { recursive: true });
+  const entries = [];
+  entries.push(await ensureDir(root));
+  entries.push(await ensureDir(join(root, "receipts")));
+  entries.push(await ensureDir(join(root, "memory")));
+  entries.push(await ensureDir(join(root, "logs")));
+  entries.push(await ensureDir(join(root, "skills")));
 
   const profilePath = join(root, "profile.json");
-  if (!(await exists(profilePath))) {
-    await writeFile(profilePath, JSON.stringify({
+  entries.push(
+    await writeJsonIfMissing(profilePath, {
       schema: "bizra.dema.profile.v0.1",
       preferred_name: null,
       memory_consent: "local",
       hidden_autonomy: false,
       created_at: new Date().toISOString()
-    }, null, 2));
-  }
+    })
+  );
 
   const configPath = join(root, "config.local.json");
-  if (!(await exists(configPath))) {
-    await writeFile(configPath, `${JSON.stringify({
+  entries.push(
+    await writeJsonIfMissing(configPath, {
       schema: "bizra.dema.local_config.v0.1",
       mode: "local",
       noHiddenDaemon: true,
       requireExplicitConsent: true,
       nextArtifact: "ARTIFACT-011"
-    }, null, 2)}\n`);
-  }
+    })
+  );
+
+  const createdPaths = entries.filter((entry) => entry.status === "created").map((entry) => entry.path);
+  const existingPaths = entries.filter((entry) => entry.status === "existing").map((entry) => entry.path);
 
   return {
     schema: "bizra.dema.setup.v0.1",
     root,
     os: { platform: platform(), arch: arch() },
-    created: true,
-    folders: ["receipts", "memory", "logs", "skills"],
-    profilePath,
-    configPath,
-    next: "Run `dema status`."
+    created: createdPaths.length > 0,
+    paths: {
+      home: root,
+      profile: profilePath,
+      config: configPath,
+      receipts: join(root, "receipts"),
+      memory: join(root, "memory"),
+      logs: join(root, "logs"),
+      skills: join(root, "skills")
+    },
+    createdPaths,
+    existingPaths,
+    untouched: [
+      "daemon state",
+      "mission runtime",
+      "runtime pulse",
+      "receipt history",
+      "external provider settings"
+    ],
+    boundaries: {
+      noHiddenDaemon: true,
+      missionExecuted: false,
+      artifact011Issued: false,
+      localFirst: true
+    },
+    next: [
+      "Run `dema status`.",
+      "Run `dema doctor`.",
+      "Preview with `dema mission propose`."
+    ]
   };
 }
