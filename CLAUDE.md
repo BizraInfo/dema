@@ -61,7 +61,7 @@ CLI → Node0 Adapter → status normalization → mission proposal → FATE con
 ## Invariants — do not weaken
 
 1. **No runtime execution here.** `dema mission propose` always returns `executes: false`. ARTIFACT-011 is created by the governed Node0 one-shot path elsewhere, never by Dema.
-2. **No hidden daemon.** `setup` writes folders only. `today` records `missionExecuted: false, runtimePulse.fired: false`. `doctor` exits 1 if `daemonStatus === "running"`.
+2. **No hidden daemon.** `setup` writes folders only. `today` records `missionExecuted: false, runtimePulse.fired: false`. `doctor` exits 0 only when **all** of `status.ready` + `status.consoleReady` + `status.activationGate === "EXPLICIT_GO_REQUIRED"` + `status.daemonStatus !== "running"` hold; otherwise exits 1. The "no hidden daemon" guard is one of those four predicates — see [apps/cli/src/index.js](apps/cli/src/index.js) `case "doctor"`.
 3. **Setup is idempotent.** `runSetup()` reports `created` vs `existing` paths and never overwrites `profile.json` / `config.local.json`. Tests assert this.
 4. **Consent is exact-string match only.** `evaluateConsent()` uses `===`; trailing whitespace fails. Phrase: `BOUNDED_DIAGNOSTIC_CONSENT_PHRASE` in [packages/core/src/mission.js](packages/core/src/mission.js).
 5. **Schema-tagged outputs.** Every JSON envelope carries `schema: "bizra.dema.<thing>.v0.1"`. New outputs follow suit.
