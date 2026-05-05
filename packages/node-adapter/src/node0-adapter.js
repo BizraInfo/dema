@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { defaultStatus } from "../../core/src/status.js";
+import { createGatewayHttpAdapter } from "./gateway-http-adapter.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -84,6 +85,17 @@ export function normalizeNode0Status(raw) {
 }
 
 export function createNode0Adapter(options = {}) {
+  // Adapter dispatch (ADR-003): explicit `adapterMode` option wins, else
+  // DEMA_NODE0_ADAPTER env var, else fall back to the legacy shellout
+  // backend (or the default-blocked status when neither env is set).
+  const adapterMode = options.adapterMode ?? process.env.DEMA_NODE0_ADAPTER;
+  if (adapterMode === "gateway-http") {
+    return createGatewayHttpAdapter({
+      baseUrl: options.gatewayUrl,
+      timeoutMs: options.timeoutMs
+    });
+  }
+
   const command = options.command ?? process.env.DEMA_NODE0_STATUS_COMMAND;
 
   return {
