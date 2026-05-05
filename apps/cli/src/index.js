@@ -5,6 +5,10 @@ import { previewBoundedDiagnostic } from "../../../packages/core/src/mission.js"
 import { recordTodayTick } from "../../../packages/core/src/today.js";
 import { listReceipts, readReceipt } from "../../../packages/receipts/src/receipt-store.js";
 import { runSetup } from "../../../packages/installer/src/setup.js";
+import {
+  readMemoryEntry,
+  summarizeMemory
+} from "../../../packages/memory/src/memory-store.js";
 
 const command = process.argv[2] ?? "help";
 const subcommand = process.argv[3];
@@ -45,7 +49,8 @@ Next:
     case "today": {
       const status = await adapter.status();
       const result = await recordTodayTick({ status });
-      console.log(JSON.stringify(result, null, 2));
+      const memory = await summarizeMemory();
+      console.log(JSON.stringify({ ...result, memory }, null, 2));
       break;
     }
     case "doctor": {
@@ -78,6 +83,23 @@ Next:
       }
       break;
     }
+    case "memory": {
+      const action = subcommand;
+      if (!action || action === "list") {
+        console.log(JSON.stringify(await summarizeMemory(), null, 2));
+      } else if (action === "show") {
+        const name = process.argv[4];
+        if (!name) {
+          throw new Error("Usage: dema memory show <name>");
+        }
+        console.log(JSON.stringify(await readMemoryEntry(name), null, 2));
+      } else {
+        throw new Error(
+          "Unknown memory command. Use `dema memory [list]` or `dema memory show <name>`."
+        );
+      }
+      break;
+    }
     case "monetize":
       console.log([
         "Dema monetize: safe offer guardian.",
@@ -100,6 +122,9 @@ Usage:
                     Preview ARTIFACT-011 readiness; does not execute runtime
   dema receipts     List local receipts
   dema receipts ID  Show one receipt by ID, artifact ID, or path suffix
+  dema memory       List local memory entries (profile + ~/.dema/memory/*)
+  dema memory show NAME
+                    Show one memory entry by name (e.g. profile, bizra-context)
   dema monetize     Show proof-safe first offer boundary
 
 Dema v0.1 is local-first and consent-bound.`);
