@@ -6,3 +6,9 @@ dist/
 !.env.example
 .dema/
 coverage/
+.claude/
+.vscode/
+
+# External reference projects — Dema stands on the shoulders, does not ingest.
+hermes-agent-2026.4.23/
+openclaw-2026.4.25/

@@ -1,0 +1,35 @@
+# Engineering Discipline (v0.1)
+
+Five rules for any code change in this repo. Originally condensed from user-scope `~/CLAUDE.md` (Operator Discipline) and Karpathy-school engineering practice; ratified for Dema during the v0.2 doctrine import on 2026-05-05.
+
+1. **Small edits.** One concept per PR. If a PR description needs more than three bullets, split it. Mixing scopes (UX polish + architecture + CI) inflates review surface and hides regressions.
+2. **Explicit assumptions.** Write the assumption down before the code that depends on it. If it's wrong, the comment fails first. Hidden assumptions are silent landmines for the next reader.
+3. **No invented commands.** Verify a command exists (`--help`, file path, function name) before citing it. Never translate vision into commands that don't exist in the tree. ZANN risk grows fast — one fake command in a doc becomes ten in the next session.
+4. **Testable success.** Every change ends in something a future reader can re-run: `npm test`, `npm run check`, a sample CLI invocation, a fixture file. "It works on my machine" without a recipe is not a finished change.
+5. **Stop at ambiguity.** When the next step has two reasonable interpretations, halt and ask. Guesses compound; halts don't. Auto-mode does not override this.
+
+## How this lands in practice
+
+- A bug-fix PR fixes the bug and nothing else. The cleanup goes in a follow-up.
+- A doc-only PR does not touch executable code. A code PR may include doc updates *for code it touches*, but does not import unrelated doctrine.
+- New abstractions need a second concrete caller before they exist. Three similar lines is better than a premature abstraction.
+- New dependencies need a written justification. Dema's current zero-dep status is a feature, not an oversight.
+- Constants come from a named source. If a value lives in two places it will diverge.
+
+## Halt gates that override auto-mode
+
+These never fall through, even with `/A` or autonomous-mode flags set:
+
+- Any push to `main` or any shared branch.
+- Any destructive git operation (reset --hard, force-push, branch -D, rm -rf).
+- Posting to GitHub PRs, issues, or external services on behalf of the user.
+- Modifying CI workflows, secrets, or production configs.
+- Issuing identity-bound artifacts (signing keys, DIDs, ARTIFACT-011).
+
+For each, describe the blast radius in one line and ask. The cost of pausing is low; the cost of an unwanted action is high.
+
+## See also
+
+- User-scope canon at `~/CLAUDE.md` — operator discipline, halt gates, output style
+- [docs/DECISION_two_dema_split.md](DECISION_two_dema_split.md) — example of a halt-gated multi-PR migration
+- Repo CLAUDE.md — Dema-specific architecture spine and invariants
