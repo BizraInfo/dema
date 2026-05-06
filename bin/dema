@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// Global `dema` entry point. Installed via `npm install -g .` (per package.json `bin` field).
+// Delegates to apps/cli/src/index.js, which handles bare invocation (active kernel) + subcommands.
+import("../apps/cli/src/index.js");
