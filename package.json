@@ -4,6 +4,9 @@
   "private": true,
   "description": "Dema \u2014 sovereign AI node companion",
   "type": "module",
+  "bin": {
+    "dema": "bin/dema"
+  },
   "scripts": {
     "dev": "node apps/cli/src/index.js status",
     "check": "node scripts/check.mjs",

@@ -9,18 +9,62 @@ import {
   readMemoryEntry,
   summarizeMemory
 } from "../../../packages/memory/src/memory-store.js";
+import {
+  formatBanner,
+  gatherBannerInputs,
+  probeGateway
+} from "../../../packages/core/src/banner.js";
+import { runShell } from "../../../packages/core/src/shell.js";
+import { TASK_REGISTRY } from "../../../packages/tasks/src/downloads-audit-preview.js";
+import {
+  formatVerdict,
+  verifyReceiptPlaceholder
+} from "../../../packages/verifier/src/sat-placeholder.js";
 
-const command = process.argv[2] ?? "help";
-const subcommand = process.argv[3];
 const adapter = createNode0Adapter();
 
-function argValue(name) {
-  const index = process.argv.indexOf(name);
-  return index >= 0 ? process.argv[index + 1] : undefined;
+function argValue(argv, name) {
+  const index = argv.indexOf(name);
+  return index >= 0 ? argv[index + 1] : undefined;
 }
 
-async function main() {
+const HELP = `Dema CLI
+
+Usage:
+  dema              Active kernel — banner + setup-or-status + next safe task
+  dema chat         Interactive shell (same surface as the bare CLI)
+  dema welcome      Show the first-run orientation
+  dema setup        Create local Dema folders/profile skeleton
+  dema status       Show human-readable Node0 status
+  dema status:json  Show machine-readable status
+  dema today        Record a local continuity tick + memory summary
+  dema doctor       Validate readiness and consent gate
+  dema mission propose [--consent "GO: Node0 bounded diagnostic activation only"]
+                    Preview ARTIFACT-011 readiness; does not execute runtime
+  dema receipts     List local receipts
+  dema receipts ID  Show one receipt by ID, artifact ID, or path suffix
+  dema memory       List local memory entries (profile + ~/.dema/memory/*)
+  dema memory show NAME
+                    Show one memory entry by name (e.g. profile, bizra-context)
+  dema task         List registered tasks
+  dema task NAME    Run a registered task (read-only in v0.3.0)
+  dema monetize     Show proof-safe first offer boundary
+  dema help         Show this list
+
+Dema v0.3.0 — Active Command Kernel. Local-first. Consent-bound. Receipt-aware.`;
+
+async function dispatch(argv) {
+  const command = argv[0] ?? "active";
+  const subcommand = argv[1];
+
   switch (command) {
+    case "active":
+    case "":
+      return runActiveKernel({ interactive: process.stdin.isTTY });
+
+    case "chat":
+      return runActiveKernel({ interactive: true, force: true });
+
     case "welcome":
       console.log(`Welcome to Dema.
 
@@ -32,27 +76,32 @@ Next:
 1. Run setup
 2. Check status
 3. Preview first bounded diagnostic`);
-      break;
+      return;
+
     case "setup":
       console.log(JSON.stringify(await runSetup(), null, 2));
-      break;
+      return;
+
     case "status": {
       const status = await adapter.status();
       console.log(formatStatus(status));
-      break;
+      return;
     }
+
     case "status:json": {
       const status = await adapter.status();
       console.log(JSON.stringify(status, null, 2));
-      break;
+      return;
     }
+
     case "today": {
       const status = await adapter.status();
       const result = await recordTodayTick({ status });
       const memory = await summarizeMemory();
       console.log(JSON.stringify({ ...result, memory }, null, 2));
-      break;
+      return;
     }
+
     case "doctor": {
       const status = await adapter.status();
       const ready =
@@ -63,75 +112,112 @@ Next:
       console.log(ready ? "Dema doctor: ready and consent-gated." : "Dema doctor: attention required.");
       console.log(formatStatus(status));
       process.exitCode = ready ? 0 : 1;
-      break;
+      return;
     }
+
     case "mission": {
       if (subcommand !== "propose") {
         throw new Error("Unknown mission command. Use `dema mission propose`.");
       }
       const status = await adapter.status();
-      const consent = argValue("--consent") ?? "";
+      const consent = argValue(argv, "--consent") ?? "";
       console.log(JSON.stringify(previewBoundedDiagnostic(status, consent), null, 2));
-      break;
+      return;
     }
+
     case "receipts": {
-      const selector = process.argv[3];
+      const selector = argv[1];
       if (selector) {
         console.log(JSON.stringify(await readReceipt(selector), null, 2));
       } else {
         console.log(JSON.stringify(await listReceipts(), null, 2));
       }
-      break;
+      return;
     }
+
     case "memory": {
       const action = subcommand;
       if (!action || action === "list") {
         console.log(JSON.stringify(await summarizeMemory(), null, 2));
       } else if (action === "show") {
-        const name = process.argv[4];
-        if (!name) {
-          throw new Error("Usage: dema memory show <name>");
-        }
+        const name = argv[2];
+        if (!name) throw new Error("Usage: dema memory show <name>");
         console.log(JSON.stringify(await readMemoryEntry(name), null, 2));
       } else {
         throw new Error(
           "Unknown memory command. Use `dema memory [list]` or `dema memory show <name>`."
         );
       }
-      break;
+      return;
     }
+
+    case "task": {
+      if (!subcommand) {
+        // List tasks.
+        const list = Object.values(TASK_REGISTRY).map((t) => ({
+          id: t.id,
+          autonomy_level: t.autonomy_level,
+          description: t.description
+        }));
+        console.log(JSON.stringify({ schema: "bizra.dema.task_list.v0.1", tasks: list }, null, 2));
+        return;
+      }
+      const task = TASK_REGISTRY[subcommand];
+      if (!task) throw new Error(`Unknown task: ${subcommand}`);
+      const receipt = await task.run();
+      const verdict = verifyReceiptPlaceholder(receipt);
+      console.log(task.format(receipt));
+      console.log("");
+      console.log(formatVerdict(verdict));
+      return;
+    }
+
     case "monetize":
       console.log([
         "Dema monetize: safe offer guardian.",
         "Allowed now: Sovereign Local AI Node Setup + Safety Audit.",
         "Blocked: token claims, passive income claims, AGI claims, public federation claims."
       ].join("\n"));
-      break;
+      return;
+
     case "help":
+    case "-h":
+    case "--help":
     default:
-      console.log(`Dema CLI
-
-Usage:
-  dema welcome      Show the first-run orientation
-  dema setup        Create local Dema folders/profile skeleton
-  dema status       Show human-readable Node0 status
-  dema status:json  Show machine-readable status
-  dema today        Record a local continuity tick without mission execution
-  dema doctor       Validate readiness and consent gate
-  dema mission propose [--consent "GO: Node0 bounded diagnostic activation only"]
-                    Preview ARTIFACT-011 readiness; does not execute runtime
-  dema receipts     List local receipts
-  dema receipts ID  Show one receipt by ID, artifact ID, or path suffix
-  dema memory       List local memory entries (profile + ~/.dema/memory/*)
-  dema memory show NAME
-                    Show one memory entry by name (e.g. profile, bizra-context)
-  dema monetize     Show proof-safe first offer boundary
-
-Dema v0.1 is local-first and consent-bound.`);
+      console.log(HELP);
   }
 }
 
-main().catch((error) => {
-  console.error("Dema error:", error?.message ?? error);
-  process.exit(1);
-});
+async function runActiveKernel({ interactive = false, force = false } = {}) {
+  const inputs = await gatherBannerInputs();
+  const banner = formatBanner(inputs);
+
+  if (interactive) {
+    await runShell({
+      greeting: banner,
+      dispatchCommand: dispatch
+    });
+    return;
+  }
+
+  console.log(banner);
+  if (force) {
+    // chat was requested but we aren't in a TTY. Be explicit.
+    console.log("");
+    console.log("(stdin is not a TTY — interactive shell skipped.)");
+  }
+}
+
+// Allow tests to import dispatch + runActiveKernel without firing main().
+const isDirectInvocation =
+  process.argv[1] && (process.argv[1].endsWith("/index.js") || process.argv[1].endsWith("/dema"));
+
+if (isDirectInvocation) {
+  dispatch(process.argv.slice(2)).catch((error) => {
+    console.error("Dema error:", error?.message ?? error);
+    process.exit(1);
+  });
+}
+
+export { dispatch, runActiveKernel };
+export { probeGateway };
